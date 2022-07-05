@@ -22,7 +22,7 @@ if($query) {
 <?include("../header.php")?>
 
 <?if(!isset($settings["api_key"])) {?>
-    <p>Make sure you update your <a href="settings.php">settings</a>.</p>
+    <p>Make sure you update your <a href="settings.php">settings</a>. Learn <a href="howto/">how to setup</a> the search.</p>
 <?exit; }?>
 
 <form method="get" action="<?=$_SERVER["PHP_SELF"]?>">
@@ -68,7 +68,7 @@ if($query) {
 
 <br>
 <br>
-<p><a href="settings.php">Settings</a></p>
+<p><a href="settings.php">Settings</a> &nbsp; <a href="howto/">How to Setup</a></p>
 
 <script>
 function blockHostname(hostname) {
