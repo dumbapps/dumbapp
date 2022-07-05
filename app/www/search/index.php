@@ -8,8 +8,10 @@ $action = Request::get("action");
 $query = Request::get("q");
 $title = "Search";
 
+$SearchController = new SearchController();
+$settings = $SearchController->getSettings();
+
 if($query) {
-    $SearchController = new SearchController();
     $items = $SearchController->search();
     $pagination = $SearchController->pagination();
     $title = "Search results for $query";
@@ -18,6 +20,10 @@ if($query) {
 ?>
 
 <?include("../header.php")?>
+
+<?if(!isset($settings["api_key"])) {?>
+    <p>Make sure you update your <a href="settings.php">settings</a>.</p>
+<?exit; }?>
 
 <form method="get" action="<?=$_SERVER["PHP_SELF"]?>">
     <div class="row">
@@ -37,7 +43,7 @@ if($query) {
         <div id="<?=$entry["hostname"]?>">
             <h5><a href="<?=$entry["link"]?>"><?=$entry["title"]?></a></h5>
 
-            <small><a href="#" onClick="blockHostname('<?=$entry["hostname"]?>')">(block)</a></small> &nbsp;<a href="<?=$entry["link"]?>"><?=$entry["link"]?></a>
+            <small><a href="#" onClick="blockHostname('<?=$entry["hostname"]?>')">(block)</a> &nbsp;<a href="<?=$entry["link"]?>"><?=$entry["link"]?></a></small>
             <p><?=$entry["htmlSnippet"]?></p>
         </div>
     <?}?>
@@ -62,7 +68,7 @@ if($query) {
 
 <br>
 <br>
-<p><a href="exclude.php">Exclusion List</a></p>
+<p><a href="settings.php">Settings</a></p>
 
 <script>
 function blockHostname(hostname) {
@@ -74,7 +80,7 @@ function blockHostname(hostname) {
                     document.getElementById(hostname).innerHTML = this.responseText;
                 }
             };
-            xmlhttp.open("GET", "exclude.php?action=block&hostname=" + hostname, true);
+            xmlhttp.open("GET", "settings.php?action=block&hostname=" + hostname, true);
             xmlhttp.send();
         }
     }

@@ -4,45 +4,85 @@ class SearchController {
     private $db;
 
     public function __construct() {
+        $this->db = new Database("sqlite: settings.db");
+
+        if(!file_exists("settings.txt")) {
+            $sql = "CREATE TABLE \"settings\" (
+                    \"id\"	INTEGER PRIMARY KEY AUTOINCREMENT,
+                    \"api_key\" TEXT,
+	                \"cx\"	TEXT,
+	                \"exclusions\"	TEXT
+                    );
+            ";
+            $this->db->query($sql);
+            file_put_contents("settings.txt", "");
+        }
     }
 
     public function blockHostname() {
         $hostname = Request::get("hostname");
-        $file = file_put_contents("exclude.txt", $hostname.PHP_EOL , FILE_APPEND | LOCK_EX);
+        $exclusions = "";
+
+        $row = $this->db->selectSingle("SELECT * FROM settings");
+        if($row) {
+            $exclusions = $row["exclusions"];
+            $api_key = $row["api_key"];
+        } else {
+            echo "<h5>Please update settings.</h5>";
+            exit;
+        }
+
+        $values = [
+            'exclusions' => $exclusions . "\n" . $hostname
+        ];
+        $this->db->update("settings", $values, "WHERE api_key=:api_key", ["api_key" => $api_key]);
+
         echo "<h5>$hostname is blocked.</h5>";
         exit;
     }
 
-    public function saveExclusions() {
+    public function save() {
+        $api_key = Request::post("api_key");
+        $cx = Request::post("cx");
         $exclusions = Request::post("exclusions");
 
-        file_put_contents("exclude.txt", $exclusions);
+        $values = [
+            'api_key' => $api_key,
+            'cx' => $cx,
+            'exclusions' => $exclusions
+        ];
+        $this->db->insert("settings", $values);
 
-        $_SESSION["msg"] = "Exclusion list updated";
+        $_SESSION["msg"] = "Settings was updated";
     }
 
-    public function getExclusions() {
-        return file_get_contents("exclude.txt");
+    public function getSettings() {
+        return $this->db->selectSingle("SELECT * FROM settings");
     }
 
     public function search() {
-        $key = "AIzaSyA36LnqiFNt1bz5BQ_aK2ZaXn-XryB3VHY";
-        $cx = "ec7b8149a218a0676";
+        $row = $this->db->selectSingle("SELECT * FROM settings");
+        if($row) {
+            $key = $row["api_key"];
+            $cx = $row["cx"];
+            $exclusions = $row["exclusions"];
+        } else {
+            return array();
+        }
 
         $query = Request::get("q");
         $start = Request::get("start", 1);
 
-        $data = file_get_contents("exclude.txt");
-        $exclude = explode("\n", $data);
+        $tmp = explode("\n", $exclusions);
 
-        $exclusions = "";
-        foreach($exclude as $item) {
+        $excludes = "";
+        foreach($tmp as $item) {
             if($item != "") {
-                $exclusions .= "-site:" . $item . " ";
+                $excludes .= "-site:" . $item . " ";
             }
         }
 
-        $google_url = "https://www.googleapis.com/customsearch/v1?key=" . urlencode($key) . "&cx=$cx&start=" . $start . "&q=" . urlencode($query . " " . $exclusions);
+        $google_url = "https://www.googleapis.com/customsearch/v1?key=" . urlencode($key) . "&cx=$cx&start=" . $start . "&q=" . urlencode($query . " " . $excludes);
 
         $data = file_get_contents($google_url);
         $json = json_decode($data, true);

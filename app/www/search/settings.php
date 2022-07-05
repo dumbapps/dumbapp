@@ -4,32 +4,39 @@ include("../include/Database.php");
 include("../include/Utils.php");
 include("../include/SearchController.php");
 
-$action = Request::all("action");
-$title = "Exclusion List";
-
 $SearchController = new SearchController();
+
+$action = Request::all("action");
 switch($action) {
     case "block":
         $SearchController->blockHostname();
         break;
     case "save":
-        $SearchController->saveExclusions();
+        $SearchController->save();
         break;
 }
 
-$exclusions = $SearchController->getExclusions();
+$settings = $SearchController->getSettings();
 
-$title = "Exclusion List";
+$title = "Settings";
 
 ?>
 
 <?include("../header.php")?>
 
-<h1>Exclusion List</h1>
+<h1>Settings</h1>
 
 <form method="post" action="<?=$_SERVER['PHP_SELF']?>">
     <input type="hidden" name="action" value="save">
-    <textarea name="exclusions"><?=$exclusions?></textarea>
+
+    <label for="api_key">API Key</label>
+    <input id="api_key" type="text" name="api_key" value="<?=$settings['api_key']?>">
+
+    <label for="cx">CX</label>
+    <input id="cx" type="text" name="cx" value="<?=$settings['cx']?>">
+
+    <label for="exclusions">Exclusion List</label>
+    <textarea id="exclusions" name="exclusions"><?=$settings['exclusions']?></textarea>
 
     <button>Save</button>
 </form>
