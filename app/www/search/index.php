@@ -37,7 +37,7 @@ if($query) {
         <div id="<?=$entry["hostname"]?>">
             <h5><a href="<?=$entry["link"]?>"><?=$entry["title"]?></a></h5>
 
-            <a href="<?=$entry["link"]?>"><?=$entry["link"]?></a> &nbsp; <a href="#" onClick="blockHostname('<?=$entry["hostname"]?>')">(block)</a>
+            <small><a href="#" onClick="blockHostname('<?=$entry["hostname"]?>')">(block)</a></small> &nbsp;<a href="<?=$entry["link"]?>"><?=$entry["link"]?></a>
             <p><?=$entry["htmlSnippet"]?></p>
         </div>
     <?}?>
