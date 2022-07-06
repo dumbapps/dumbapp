@@ -1,218 +1,95 @@
 <?php
-class Database {
-    private $pdo;
-    private $dsn;
-    private $username;
-    private $password;
+class Database extends SQLite3 {
+    private $db;
 
-    public function __construct($dsn=null, $username=null, $password=null) {
-        if(!$dsn) trigger_error('Missing configuration', E_USER_ERROR);
-
-        $this->dsn = $dsn;
+    public function __construct($db) {
+        $this->db = $db;
     }
 
-    public function __destruct() {
+    public function run($query) {
+        $this->open($this->db);
+        return $this->query($query);
+    }
+
+    public function select($query) {
+        $this->open($this->db);
+        $result = $this->query($query);
+
+        $array = array();
+        while($row = $result->fetchArray(SQLITE3_ASSOC) ) {
+            $array[] = $row;
+        }
+
         $this->close();
+
+        return $array;
     }
 
-    private function connect() {
-        if($this->pdo) {
-            return $this->pdo;
+    public function selectSingle($query) {
+        $this->open($this->db);
+        $result = $this->query($query);
+
+        $array = array();
+        while($row = $result->fetchArray(SQLITE3_ASSOC) ) {
+            $array[] = $row;
         }
 
-        $options = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ];
-        try {
-            return $this->pdo = new PDO($this->dsn, $this->username, $this->password, $options);
-        } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
-    }
+        $this->close();
 
-    public function close() {
-        if($this->pdo) {
-            $this->pdo = null;
+        if(count($array) == 1) {
+            return $array[0];
+        } else {
+            return null;
         }
     }
 
-    public function count($table, $where, $data=array()) {
-        if(!isset($table) || !isset($where)) trigger_error('Missing statement', E_USER_ERROR);
-
-        $sql = sprintf('SELECT COUNT(*) AS total FROM %s %s', $table, $where);
-
-        $pdo = $this->connect();
-
-        try {
-            $stmt = $pdo->prepare($sql);
-            $row = $stmt->execute($data);
-            $stmt->fetch();
-
-            return $row['total'];
-        } catch(\PDOException $e) {
-            $pdo->rollback();
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
-    }
-
-    public function query($sql, $data=array()) {
-        if(!isset($sql)) trigger_error('Missing statement', E_USER_ERROR);
-
-        $pdo = $this->connect();
-
-        try {
-            $stmt = $pdo->prepare($sql);
-
-            return $stmt->execute($data);
-        } catch(PDOException $e) {
-            $pdo->rollback();
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
-    }
-
-    public function selectSingle($sql, $data=array()) {
-        if(!isset($sql)) trigger_error('Missing statement', E_USER_ERROR);
-
-        $pdo = $this->connect();
-
-        try {
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($data);
-            //$stmt->debugDumpParams();
-
-            return $stmt->fetch();
-        } catch(PDOException $e) {
-            $pdo->rollback();
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
-    }
-
-    public function select($sql, $data=array()) {
-        if(!isset($sql)) trigger_error('Missing statement', E_USER_ERROR);
-
-        $pdo = $this->connect();
-
-        try {
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($data);
-            //$stmt->debugDumpParams();
-
-            return $stmt->fetchAll();
-        } catch(PDOException $e) {
-            $pdo->rollback();
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
-    }
-
-    public function update($table, $values, $where, $data=array()) {
-        if(!isset($table) || !isset($values) || count($values) == 0) trigger_error('Missing statement', E_USER_ERROR);
-
+    public function update($table, $values, $query) {
         $val = '';
-        foreach ($values as $key => $value) {
-            $val .= $key . '=:' . $key . ', ';
+        foreach ($values as $k => $v) {
+            $val .= $k . '=\'' . SQLite3::escapeString($v) . '\', ';
         }
         $val = rtrim($val, ', ');
-        $sql = sprintf('UPDATE %s SET %s %s', $table, $val, $where);
 
-        $pdo = $this->connect();
+        $query = 'UPDATE ' . $table . ' SET ' . $val . $query;
 
-        try {
-            $pdo->beginTransaction();
-            $stmt = $pdo->prepare($sql);
-            $affected = $stmt->execute(array_merge($values, $data));
-            //$stmt->debugDumpParams();
-            $pdo->commit();
+        $this->open($this->db);
+        $this->exec($query);
+        $affected_rows = $this->changes();
+        $this->close();
 
-            return $affected;
-
-        } catch(PDOException $e) {
-            $pdo->rollback();
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
+        return $affected_rows;
     }
 
-    public function delete($table, $where=null, $data=array()) {
-        if(!isset($table)) trigger_error('Missing statement', E_USER_ERROR);
+    public function delete($query) {
+        $this->open($this->db);
+        $this->exec($query);
+        $affected_rows = $this->changes();
+        $this->close();
 
-        $sql = sprintf('DELETE FROM %s %s', $table, $where);
-
-        $pdo = $this->connect();
-
-        try {
-            $pdo->beginTransaction();
-            $stmt = $pdo->prepare($sql);
-            $affected = $stmt->execute($data);
-            //$stmt->debugDumpParams();
-            $pdo->commit();
-
-            return $affected;
-
-        } catch(PDOException $e) {
-            $pdo->rollback();
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
+        return $affected_rows;
     }
 
     public function insert($table, $values) {
-        if(!isset($table) || !isset($values) || count($values) == 0) trigger_error('Missing statement', E_USER_ERROR);
-
         $var = '';
         $val = '';
-        foreach ($values as $key => $value) {
-            $var .= $key . ', ';
-            $val    .= ':' . $key . ', ';
+        foreach ($values as $k => $v) {
+            $var .= $k . ', ';
+            $val .= '\'' . SQLite3::escapeString($v) . '\', ';
         }
         $var = rtrim($var, ', ');
         $val = rtrim($val, ', ');
-        $sql = sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $var, $val);
 
-        $pdo = $this->connect();
+        $this->open($this->db);
+        $query = 'INSERT INTO ' . $table . ' (' . $var . ') VALUES (' . $val . ')';
+        $this->exec($query);
+        $insert_row_id = $this->lastInsertRowID();
+        $this->close();
 
-        try {
-            $pdo->beginTransaction();
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($values);
-            //$stmt->debugDumpParams();
-            $id = $pdo->lastInsertId();
-            $pdo->commit();
-
-            return $id;
-        } catch(PDOException $e) {
-            $pdo->rollback();
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
+        return $insert_row_id;
     }
 
-    public function insertMultiple($table, $values) {
-        if(!isset($table) || !isset($values) || count($values) == 0) trigger_error('Missing statement', E_USER_ERROR);
-
-        $var = '';
-        $val = '';
-        foreach ($values[0] as $key => $value) {
-            $var .= $key . ', ';
-            $val    .= ':' . $key . ', ';
-        }
-        $var = rtrim($var, ', ');
-        $val = rtrim($val, ', ');
-        $sql = sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $var, $val);
-
-        $pdo = $this->connect();
-
-        try {
-            $pdo->beginTransaction();
-            $stmt = $pdo->prepare($sql);
-            foreach($values as $row) {
-                $stmt->execute($row);
-            }
-            //$stmt->debugDumpParams();
-            $pdo->commit();
-
-            return true;
-        } catch(PDOException $e) {
-            $pdo->rollback();
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
+    public function escape($var) {
+        return SQLite3::escapeString($var);
     }
 }
+?>

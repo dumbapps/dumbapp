@@ -4,37 +4,33 @@ class SearchController {
     private $db;
 
     public function __construct() {
-        $this->db = new Database("sqlite: settings.db");
+        $db_location = realpath($_SERVER["DOCUMENT_ROOT"]) . "/settings.db";
 
-        if(!file_exists("settings.txt")) {
+        if(!file_exists($db_location)) {
+            $this->db = new Database($db_location);
             $sql = "CREATE TABLE \"settings\" (
                     \"id\"	INTEGER PRIMARY KEY AUTOINCREMENT,
-                    \"api_key\" TEXT,
-	                \"cx\"	TEXT,
-	                \"exclusions\"	TEXT
+	                \"key\"	TEXT,
+	                \"value\"	TEXT
                     );
             ";
-            $this->db->query($sql);
-            file_put_contents("settings.txt", "");
+            $this->db->run($sql);
+        } else {
+            $this->db = new Database($db_location);
         }
     }
 
     public function blockHostname() {
         $hostname = Request::get("hostname");
 
-        $row = $this->db->selectSingle("SELECT * FROM settings");
-        if($row) {
-            $exclusions = $row["exclusions"];
-            $api_key = $row["api_key"];
-        } else {
-            echo "<h5>Please update settings.</h5>";
-            exit;
-        }
-
+        $arr = $this->getSettings();
+        $arr["exclusions"] = $arr["exclusions"] . "\n" . $hostname;
         $values = [
-            'exclusions' => $exclusions . "\n" . $hostname
+            "key" => "search",
+            "value" => json_encode($arr)
         ];
-        $this->db->update("settings", $values, "WHERE api_key=:api_key", ["api_key" => $api_key]);
+
+        $this->db->update("settings", $values, "WHERE key='search'");
 
         echo "<h5>$hostname is blocked.</h5>";
         exit;
@@ -45,28 +41,49 @@ class SearchController {
         $cx = Request::post("cx");
         $exclusions = Request::post("exclusions");
 
-        $values = [
-            'api_key' => $api_key,
-            'cx' => $cx,
-            'exclusions' => $exclusions
+        $arr = [
+            "api_key" => $api_key,
+            "cx" => $cx,
+            "exclusions" => $exclusions,
         ];
-        $this->db->insert("settings", $values);
+        $values = [
+            "key" => "search",
+            "value" => json_encode($arr)
+        ];
+
+        $row = $this->db->selectSingle("SELECT * FROM settings WHERE key='search'");
+        if($row) {
+            $this->db->update("settings", $values, "WHERE key='search'");
+        } else {
+            $this->db->insert("settings", $values);
+        }
 
         $_SESSION["msg"] = "Settings was updated";
     }
 
     public function getSettings() {
-        return $this->db->selectSingle("SELECT * FROM settings");
+        $row = $this->db->selectSingle("SELECT * FROM settings WHERE key='search'");
+        if($row) {
+            $arr = json_decode($row["value"], true);
+            return $arr;
+        }
+
+        return [
+            "api_key" => "",
+            "cx" => "",
+            "exclusions" => ""
+        ];
     }
 
     public function search() {
-        $row = $this->db->selectSingle("SELECT * FROM settings");
+        $row = $this->db->selectSingle("SELECT * FROM settings WHERE key='search'");
         if($row) {
-            $key = $row["api_key"];
-            $cx = $row["cx"];
-            $exclusions = $row["exclusions"];
+            $arr = json_decode($row["value"], true);
+            $key = $arr["api_key"];
+            $cx = $arr["cx"];
+            $exclusions = $arr["exclusions"];
         } else {
-            return array();
+            return [];
         }
 
         $query = Request::get("q");
