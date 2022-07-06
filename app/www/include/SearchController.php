@@ -21,7 +21,6 @@ class SearchController {
 
     public function blockHostname() {
         $hostname = Request::get("hostname");
-        $exclusions = "";
 
         $row = $this->db->selectSingle("SELECT * FROM settings");
         if($row) {
