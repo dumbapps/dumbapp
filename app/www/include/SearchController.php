@@ -15,9 +15,9 @@ class SearchController {
                     );
             ";
             $this->db->run($sql);
-        } else {
-            $this->db = new Database($db_location);
         }
+
+        $this->db = new Database($db_location);
     }
 
     public function blockHostname() {
