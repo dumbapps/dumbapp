@@ -68,20 +68,15 @@ class SearchController {
             return $arr;
         }
 
-        return [
-            "api_key" => "",
-            "cx" => "",
-            "exclusions" => ""
-        ];
+        return null;
     }
 
     public function search() {
-        $row = $this->db->selectSingle("SELECT * FROM settings WHERE key='search'");
+        $row = $this->getSettings();
         if($row) {
-            $arr = json_decode($row["value"], true);
-            $key = $arr["api_key"];
-            $cx = $arr["cx"];
-            $exclusions = $arr["exclusions"];
+            $key = $row["api_key"];
+            $cx = $row["cx"];
+            $exclusions = $row["exclusions"];
         } else {
             return [];
         }
