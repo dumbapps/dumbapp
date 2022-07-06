@@ -11,7 +11,7 @@ This is a self-hosted app running locally that allows you to run your own Google
 # Limitations
 
 - Limited to 10,000 searches a day
-- Must setup with Google Programmable Search and custom Search API
+- Must setup with Google Programmable Search and custom Search API (free with Google account)
 - Currently setup to run on Windows
 
 # How to setup
