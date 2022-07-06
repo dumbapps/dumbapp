@@ -21,6 +21,8 @@ if($query) {
 
 <?include("../header.php")?>
 
+<h1><?=$title?></h1>
+
 <?if(!isset($settings["api_key"])) {?>
     <p>Make sure you update your <a href="settings.php">settings</a>. Learn <a href="howto/">how to setup</a> the search.</p>
 <?exit; }?>
