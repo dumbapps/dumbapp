@@ -94,7 +94,7 @@ $categories = $BookmarkController->getCategories();
                             &nbsp;|&nbsp;
                             <a href="post.php?id=<?=$entry["id"]?>">edit</a>
                             &nbsp;|&nbsp;
-                            <a href="#" onClick="deleteBookmark(<?=$entry["id"]?>)">delete</a>
+                            <span class="link" onClick="deleteBookmark(<?=$entry["id"]?>)">delete</span>
                         </small>
                     </p>
                 </li>

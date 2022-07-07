@@ -44,7 +44,7 @@ ul, ol, dl, fieldset, pre, pre > code, caption {
 video, summary, input, select { outline:none; }
 
 /* reset clickable things  (FF Bug: select:hover prevents usage) */
-a, button, select, summary { color: var(--clink); cursor: pointer; }
+a, button, select, summary, .link { color: var(--clink); cursor: pointer; }
 
 
 /* 3. Base Style ––––––––––––––––––––––––––––––––––––––– */
@@ -62,7 +62,7 @@ body > footer { margin: 10rem 0rem 0rem; font-size: 90%; }
 p { margin: .6em 0; }
 
 /* links */
-a[href]{ text-decoration: underline solid var(--cmed); text-underline-position: under; }
+a[href], .link { text-decoration: underline solid var(--cmed); text-underline-position: under; }
 a[href^="#"] {text-decoration: none; }
 a:hover, button:not([disabled]):hover, summary:hover {
 	filter: brightness(92%); color: var(--cemph); border-color: var(--cemph);

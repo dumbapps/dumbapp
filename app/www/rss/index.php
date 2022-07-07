@@ -97,11 +97,11 @@ $categories = $RssController->getCategories();;
                                 <?=$entry["notes"]?>
                                 &nbsp;|&nbsp;
                             <?}?>
-                            <a href="#" onClick="hide(<?=$entry["id"]?>)">summary</a>
+                            <span class="link" onClick="hide(<?=$entry["id"]?>)">summary</span>
                             &nbsp;|&nbsp;
                             <a href="summary.php?id=<?=$entry["id"]?>">edit</a>
                             &nbsp;|&nbsp;
-                            <a href="#" onClick="deleteSummary(<?=$entry["id"]?>)">delete</a>
+                            <span class="link" onClick="deleteSummary(<?=$entry["id"]?>)">delete</span>
                         </small>
                     </p>
 
