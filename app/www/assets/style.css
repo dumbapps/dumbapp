@@ -13,7 +13,7 @@ Table of Contents:
 
 :root, html[data-theme='light'] {
 	--rem: 12pt;
-	--width: 50rem;
+	--width: 100rem;
 	--navpos: absolute;  /* fixed | absolute */
 	--font-p: 1em/1.7  'Open Sans', 'DejaVu Sans', FreeSans, Helvetica, sans-serif;
 	--font-h: .9em/1.5 'Open Sans', 'DejaVu Sans', FreeSans, Helvetica, sans-serif;

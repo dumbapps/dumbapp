@@ -6,7 +6,7 @@ include("../include/SearchController.php");
 
 $action = Request::get("action");
 $query = Request::get("q");
-$title = "Search";
+$h1 = "Search";
 
 $SearchController = new SearchController();
 $settings = $SearchController->getSettings();
@@ -14,14 +14,14 @@ $settings = $SearchController->getSettings();
 if($query) {
     $items = $SearchController->search();
     $pagination = $SearchController->pagination();
-    $title = "Search results for $query";
+    $h1 = "Search results for $query";
 }
 
 ?>
 
 <?include("../header.php")?>
 
-<h1><?=$title?></h1>
+<h1><?=$h1?></h1>
 
 <?if(!isset($settings["api_key"])) {?>
     <p>Make sure you update your <a href="settings.php">settings</a>. Learn <a href="howto/">how to setup</a> the search.</p>

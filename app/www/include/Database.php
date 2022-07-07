@@ -8,7 +8,8 @@ class Database extends SQLite3 {
 
     public function run($query) {
         $this->open($this->db);
-        return $this->query($query);
+        $this->query($query);
+        $this->close();
     }
 
     public function select($query) {

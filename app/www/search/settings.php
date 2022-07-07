@@ -18,13 +18,13 @@ switch($action) {
 
 $settings = $SearchController->getSettings();
 
-$title = "Settings";
+$h1 = "Settings";
 
 ?>
 
 <?include("../header.php")?>
 
-<h1>Settings</h1>
+<h1><?=$h1?></h1>
 
 <form method="post" action="<?=$_SERVER['PHP_SELF']?>">
     <input type="hidden" name="action" value="save">
