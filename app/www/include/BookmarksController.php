@@ -100,7 +100,7 @@ class BookmarksController {
 
                 $tmp = preg_split("/ADD_DATE=\"/", $line);
                 $tmp = preg_split("/\"/", $tmp[1]);
-                $created_at = $tmp[0];
+                $created_at = date("Y-m-d", $tmp[0]);
 
                 $tmp = preg_split("/<\/A>/", $line);
                 $tmp = preg_split("/\">/", $tmp[0]);
