@@ -18,7 +18,7 @@ $RssController = new RssController();
 $action = Request::all("action");
 switch($action) {
     case "save":
-        $RssController->saveSummary($id, $title, $url, $tags, $category, $description, $notes, $date);
+        $RssController->saveSummary(null, $id, $title, $url, $tags, $category, $description, $notes, $date);
         break;
     case "delete":
         $RssController->deleteSummary();
@@ -49,7 +49,7 @@ if($id) {
 
 <h1><?=$h1?></h1>
 
-<form action="post.php" method="post">
+<form action="summary.php" method="post">
     <input type="hidden" name="action" value="save">
     <input type="hidden" name="id" value="<?=$id?>">
 

@@ -97,13 +97,17 @@ $categories = $RssController->getCategories();;
                                 <?=$entry["notes"]?>
                                 &nbsp;|&nbsp;
                             <?}?>
+                            <a href="#" onClick="hide(<?=$entry["id"]?>)">summary</a>
+                            &nbsp;|&nbsp;
                             <a href="summary.php?id=<?=$entry["id"]?>">edit</a>
                             &nbsp;|&nbsp;
                             <a href="#" onClick="deleteSummary(<?=$entry["id"]?>)">delete</a>
                         </small>
                     </p>
 
-                    <p><?=$entry["description"]?></p>
+                    <div id="summary<?=$entry['id']?>" style="display: none;">
+                        <p><?=$entry["description"]?></p>
+                    </div>
                 </li>
             <?}?>
         </ol>
@@ -128,21 +132,29 @@ $categories = $RssController->getCategories();;
 </form>
 
 <script>
-    function deleteSummary(id) {
-        if (id.length != 0) {
-            if(confirm("Are you sure?")) {
-                var xmlhttp = new XMLHttpRequest();
-                xmlhttp.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                        document.getElementById("link"+id).innerHTML = this.responseText;
-                    }
-                };
-                xmlhttp.open("GET", "/rss/summary.php?action=delete&id=" + id, true);
-                xmlhttp.send();
-            }
+function deleteSummary(id) {
+    if (id.length != 0) {
+        if(confirm("Are you sure?")) {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("link"+id).innerHTML = this.responseText;
+                }
+            };
+            xmlhttp.open("GET", "/rss/summary.php?action=delete&id=" + id, true);
+            xmlhttp.send();
         }
-        return false;
     }
+    return false;
+}
+function hide(id) {
+    var x = document.getElementById("summary"+id);
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
 </script>
 
 <?include("../footer.php")?>

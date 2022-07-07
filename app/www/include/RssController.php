@@ -240,22 +240,26 @@ class RssController {
 
             foreach ($items as $item) {
                 $title = $item->title;
+
                 $url = $item->link;
+                if(isset($item->link['href'])) {
+                    $url = $item->link['href'];
+                }
 
                 $description = null;
                 if(isset($item->description)) {
                     $description = $item->description;
-                } else {
+                } else if(isset($item->content)) {
                     $description = $item->content;
                 }
 
-                // remove cnn social
-                if(preg_match("/<div class=\"feedflare\">/", $description)) {
-                    $tmp = preg_split("/<div class=\"feedflare\">/", $description);
-                    $description = $tmp[0];
+                $date = null;
+                if(isset($item->pubDate)) {
+                    $date = $item->pubDate;
+                } else if(isset($item->updated)) {
+                    $date = $item->updated;
                 }
 
-                $date = $item->pubDate;
                 if($date == "") {
                     $date = date("Y-m-d");
                 } else {
